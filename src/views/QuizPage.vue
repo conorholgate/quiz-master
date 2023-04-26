@@ -24,6 +24,7 @@
         <div style="margin-bottom: 20px">
           {{ `Question ${activeQuestion + 1}/${questions.length}` }}
         </div>
+        <!-- Displaying the questions and only showing one question at a time -->
         <div v-for="(question, index) in questions" :key="index" v-show="activeQuestion === index">
           <quiz-question :question="question" @answerSelected="answerSelected" />
         </div>
@@ -44,6 +45,7 @@ import QuizQuestion from '../components/QuizQuestion.vue'
 import QuizResults from '../components/QuizResults.vue'
 import { Question } from '../types/quiz'
 
+// allows access to the QuestionTimer component functions
 const timer = ref<InstanceType<typeof QuestionTimer> | null>(null)
 
 const questions = ref<Question[]>([])
@@ -61,11 +63,9 @@ const startQuiz = (): void => {
 const endQuiz = (): void => {
   quizFinished.value = true
 }
-
 const resetTimer = (): void => {
   timer.value?.resetTimer()
 }
-
 const setHideQuestion = (value: boolean): void => {
   hideQuestion.value = value
 }
@@ -84,9 +84,9 @@ const nextQuestion = (): void => {
 const timerFinished = (): void => {
   setHideQuestion(true)
   if (activeQuestion.value < questions.value.length - 1) {
+    // pushing the qustion with no answer to the array. Allows to display all the questions in the quiz results component
+    usersAnswers.value.push(questions.value[activeQuestion.value])
     setTimeout(() => {
-      // pushing the qustion with no answer to the array
-      usersAnswers.value.push(questions.value[activeQuestion.value])
       activeQuestion.value++
       resetTimer()
       setHideQuestion(false)
@@ -102,10 +102,10 @@ const answerSelected = (answer: any): void => {
   nextQuestion()
 }
 
-async function fetchQuestions() {
+async function fetchQuestions(): Promise<void> {
   try {
     const response = await fetch('/questions.json')
-    const data = await response.json()
+    const data: Question[] = await response.json()
     questions.value.push(...data)
   } catch (error) {
     console.error(error)

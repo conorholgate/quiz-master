@@ -66,6 +66,7 @@ export default defineComponent({
       if (answer.isCorrect) {
         return 'bg-green'
       }
+      // if user has not answered the question
       if (!result.answer) {
         return 'bg-gray'
       }

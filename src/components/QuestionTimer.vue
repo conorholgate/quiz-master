@@ -11,10 +11,10 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, defineProps, defineEmits, defineExpose, ref } from 'vue'
+import { defineComponent, defineEmits, ref } from 'vue'
 import { TimerProps, EmitFunctions } from '../types/timer'
 export default defineComponent({
-  name: 'question=timer',
+  name: 'question-timer',
   props: {
     time: {
       type: Number,
@@ -35,6 +35,7 @@ export default defineComponent({
     const startTimer = () => {
       timer.value = setInterval(() => {
         remainingTime.value -= 1
+        // stops the timer at 0. stops it going into negative values
         if (remainingTime.value === 0) {
           clearInterval(timer.value!)
           emit('timeFinished')
@@ -47,12 +48,6 @@ export default defineComponent({
       remainingTime.value = props.time
       startTimer()
     }
-
-    // Expose functions to parent component
-    defineExpose({
-      startTimer,
-      resetTimer,
-    })
 
     return {
       remainingTime,

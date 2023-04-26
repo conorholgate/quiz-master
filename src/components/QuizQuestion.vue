@@ -1,34 +1,45 @@
 <template>
-  <div class="question">{{ `${question}?` }}</div>
-  <div v-for="(answer, index) in answers" :key="index">
-    <div class="answer" @click="selectAnswer(answer)">
-      {{ answer.phrasing }}
-    </div>
+  <div class="question">{{ `${question.question}?` }}</div>
+  <div v-for="(answer, index) in question.answers" :key="index" class="answer" @click="onAnswerSelected(answer)">
+    {{ answer.phrasing }}
   </div>
 </template>
 
-<script setup lang="ts">
-const props = defineProps({
-  question: {
-    type: String,
+<script lang="ts">
+import { defineComponent, ref, defineEmits } from 'vue'
+import { Question, EmitFunctions } from '../types/quiz'
+
+export default defineComponent({
+  name: 'quiz-question',
+  props: {
+    question: {
+      type: Object as () => Question,
+      required: true,
+    },
   },
-  answers: {
-    type: Array,
+  emits: ['answerSelected'] as unknown as defineEmits<EmitFunctions>,
+
+  setup(props: Question, { emit }: { emit: (event: keyof EmitFunctions, ...args: any[]) => void }) {
+    const selectedAnswer = ref('')
+
+    const selectAnswer = (answer: { phrasing: string }) => {
+      selectedAnswer.value = answer.phrasing
+      emit('answerSelected', { question: props.question, answer })
+    }
+
+    const onAnswerSelected = (answer: { phrasing: string }) => {
+      selectAnswer(answer)
+    }
+
+    return { selectedAnswer, onAnswerSelected }
   },
 })
-
-// EMITS
-const emit = defineEmits(['answerSelected'])
-
-//DATA
-const selectAnswer = answer => {
-  emit('answerSelected', { question: props.question, answer })
-}
 </script>
 
 <style scoped>
 .question {
   margin-bottom: 10px;
+  font-size: 2rem;
 }
 .answer {
   margin-bottom: 10px;

@@ -2,7 +2,7 @@
   <div>
     <div v-if="remainingTime > 0">
       <h3>{{ label }}</h3>
-      <p>{{ remainingTime }}</p>
+      <p style="font-size: 24px">{{ remainingTime }}</p>
     </div>
     <div v-if="remainingTime === 0">
       <h3>{{ timeExpiredMessage }}</h3>
@@ -10,46 +10,55 @@
   </div>
 </template>
 
-<script setup lang="ts">
-import { ref } from 'vue'
-const props = defineProps({
-  time: {
-    type: Number,
-    required: true,
+<script lang="ts">
+import { defineComponent, defineProps, defineEmits, defineExpose, ref } from 'vue'
+import { TimerProps, EmitFunctions } from '../types/timer'
+export default defineComponent({
+  name: 'question=timer',
+  props: {
+    time: {
+      type: Number,
+      required: true,
+    },
+    label: {
+      type: String,
+    },
+    timeExpiredMessage: {
+      type: String,
+    },
   },
-  label: {
-    type: String,
-  },
-  timeExpiredMessage: {
-    type: String,
-  },
-})
-// EMITS
-const emit = defineEmits(['timeFinished'])
+  emits: ['timeFinished'] as unknown as defineEmits<EmitFunctions>,
+  setup(props: TimerProps, { emit }: { emit: (event: keyof EmitFunctions, ...args: any[]) => void }) {
+    const timer = ref<number | null>(null)
+    const remainingTime = ref<number>(props.time)
 
-// DATA
-const timer = ref<NodeJS.Timeout | null>(null)
-const remainingTime = ref(props.time)
-
-const startTimer = () => {
-  timer.value = setInterval(() => {
-    remainingTime.value -= 1
-    if (remainingTime.value === 0) {
-      clearInterval(timer.value!)
-      emit('timeFinished')
+    const startTimer = () => {
+      timer.value = setInterval(() => {
+        remainingTime.value -= 1
+        if (remainingTime.value === 0) {
+          clearInterval(timer.value!)
+          emit('timeFinished')
+        }
+      }, 1000)
     }
-  }, 100000)
-}
 
-const resetTimer = () => {
-  clearInterval(timer.value!)
-  remainingTime.value = props.time
-  startTimer()
-}
+    const resetTimer = () => {
+      clearInterval(timer.value!)
+      remainingTime.value = props.time
+      startTimer()
+    }
 
-// Exposing to parent component
-defineExpose({
-  startTimer,
-  resetTimer,
+    // Expose functions to parent component
+    defineExpose({
+      startTimer,
+      resetTimer,
+    })
+
+    return {
+      remainingTime,
+      startTimer,
+      resetTimer,
+    }
+  },
 })
 </script>
